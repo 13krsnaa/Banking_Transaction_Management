@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const bcryptjs = require("bcryptjs");
 
+//yha user ka schema bnaya
 const userSchema = new mongoose.Schema(
   {
     email: {
@@ -32,7 +33,7 @@ const userSchema = new mongoose.Schema(
 
 // user jab save krega to to ye function run hoga , ye password ko hash krne ke liye use hoga
 
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function () {
   //agar pass modify nhi hai to yhi se return ho jaoge
   if (!this.isModified("password")) {
     return next();
@@ -42,7 +43,7 @@ userSchema.pre("save", async function (next) {
   const hash = await bcryptjs.hash(this.password, 10);
   this.password = hash;
 
-  return next();
+  return;
 });
 
 userSchema.methods.comparePassword = async function (password) {

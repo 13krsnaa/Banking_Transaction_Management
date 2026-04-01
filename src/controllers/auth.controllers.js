@@ -24,11 +24,11 @@ async function userRegisterController(req, res) {
     name,
   });
 
-  const token = jwt.sign({ userId: user._id }, process.env.JTW_SECRET, {
+  const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
     expiresIn: "7d",
   });
 
-  res.cookies("token", token);
+  res.cookie("token", token);
   res.status(201).json({
     user: {
       _id: user._id,
