@@ -1,5 +1,6 @@
 const userModel = require("../models/user.model");
 const jwt = require("jsonwebtoken");
+const emailService = require("../services/email.services");
 
 // user register controller
 // Ye post request : /api/auth/register ko control krega (line 6 - 39)
@@ -36,6 +37,8 @@ async function userRegisterController(req, res) {
     },
     token,
   });
+
+  await emailService.sendRegistrationEmail(user.email, user.name);
 }
 // user login controller
 //ye post request : /api/auth/login ko control krega
