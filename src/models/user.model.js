@@ -26,6 +26,12 @@ const userSchema = new mongoose.Schema(
       minlength: [6, "pasword should be atleast 6 characters long"],
       select: false, //ye db qurey me password ko hta dega jabta query me pass pucha na ho
     },
+    systemUser: {
+      type: Boolean,
+      default: false,
+      immutable: true,
+      select: false,
+    },
   },
   {
     timestamps: true, // ye user ka create hua or kab update hua uska time aa jata hai

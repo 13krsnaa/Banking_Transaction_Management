@@ -27,7 +27,7 @@ transporter.verify((error, success) => {
   }
 });
 
-//* Function to send email *//
+//* Function to send  email *//
 
 const sendEmail = async (to, subject, text, html) => {
   try {
@@ -53,9 +53,30 @@ async function sendRegistrationEmail(userEmail, name) {
   await sendEmail(userEmail, subject, text, html);
 }
 
+async function sendTransactionEmail(userEmail, name, amount, toAccount) {
+  const subject = "Transaction Alert: Transaction Successful !";
+  const text = `Dear ${name},\n\nWe are pleased to inform you that your transaction of $${amount} to account ${toAccount} has been successfully processed. If you have any questions or need further assistance, please do not hesitate to contact our support team.\n\nBest regards,\nBanking Transaction Management Team`;
+
+  const html = `<p>Dear ${name},</p><p>We are pleased to inform you that your transaction of $${amount} to account ${toAccount} has been successfully processed. If you have any questions or need further assistance, please do not hesitate to contact our support team.</p><p>Best regards,<br>Banking Transaction Management Team</p>`;
+
+  await sendEmail(userEmail, subject, text, html);
+}
+
+async function sendFailedTransactionEmail(userEmail, name, amount, toAccount) {
+  const subject = "Transaction Alert: Transaction Failed !";
+
+  const text = `Dear ${name},\n\nWe regret to inform you that your transaction of $${amount} to account ${toAccount} has failed. Please check your account balance and try again. If you continue to experience issues, please contact our support team for assistance.\n\nBest regards,\nBanking Transaction Management Team`;
+
+  const html = `<p>Dear ${name},</p><p>We regret to inform you that your transaction of $${amount} to account ${toAccount} has failed. Please check your account balance and try again. If you continue to experience issues, please contact our support team for assistance.</p><p>Best regards,<br>Banking Transaction Management Team</p>`;
+
+  await sendEmail(userEmail, subject, text, html);
+}
+
 module.exports = transporter;
 module.exports = sendEmail;
 
 module.exports = {
   sendRegistrationEmail,
+  sendTransactionEmail,
+  sendFailedTransactionEmail,
 };
