@@ -122,6 +122,9 @@ async function createTransaction(req, res) {
     { session },
   );
 
+  /**
+   * Step 6: Create DEBIT ledger entry
+   */
   const debitLedgerEntry = await ledgerModel.create(
     {
       account: fromAccount,
@@ -131,7 +134,9 @@ async function createTransaction(req, res) {
     },
     { session },
   );
-
+  /**
+   * Step 7: Create CREDIT ledger entry
+   */
   const creditLedgerEntry = await ledgerModel.create(
     {
       account: toAccount,
@@ -141,12 +146,28 @@ async function createTransaction(req, res) {
     },
     { session },
   );
-
+  /**
+   * Step 8: Marking the transaction as completed
+   * step 9: commit the transacction
+   */
   transaction.status = "COMPLETED";
   await transaction.save({ session });
 
   await session.commitTransaction();
   session.endsession();
+
+  /**
+   * step 10: send email notification to the user
+   */
+  await emailService.sendTransactionEmail(
+    req.user.email,
+    req.user.name,
+    amount.toAccount,
+  );
+  return res.status(201).json({
+    message: "Transaction created sucessfully",
+    transaction: transaction,
+  });
 }
 
 async function createInitialFundsTransaction(req, res) {
