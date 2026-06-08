@@ -2,7 +2,8 @@ const { Router } = require("express");
 
 const transactionRoutes = Router();
 const transactionController = require("../controllers/transaction.controller");
-const authMiddleware = require("../middlewares/auth.middleware");
+const authMiddleware = require("../middleware/auth.middleware");
+const transactionController = require("../controllers/transaction.controller");
 
 //POST request: /api/transactions/ ye nya transction create krega
 
