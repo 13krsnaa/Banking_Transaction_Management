@@ -1,6 +1,7 @@
 const transactionModel = require("../models/transaction.model");
 const accountModel = require("../models/account.model");
 const ledgerModel = require("../models/ledger.model");
+const userModel = require("../models/user.model");
 const emailService = require("../services/email.services");
 const mongoose = require("mongoose");
 
@@ -172,12 +173,13 @@ async function createTransaction(req, res) {
 
 async function createInitialFundsTransaction(req, res) {
   const { toAccount, amount, idempotencyKey } = req.body;
-  if (!tooAccount || !amount || !idempotencyKey) {
+  if (!toAccount || !amount || !idempotencyKey) {
     return res.status(400).json({
       message: "toAccount, amount and idempotencyKey are required",
       status: "failed",
     });
   }
+
   const toUserAccount = await accountModel.findOne({
     _id: toAccount,
   });
@@ -187,54 +189,84 @@ async function createInitialFundsTransaction(req, res) {
     });
   }
 
-  const fronUserAccount = await accountModel.findOne({
-    systemAccount: true,
-    user: req.user._id,
+  const systemUser = await userModel.findOne({
+    systemUser: true,
+  });
+
+  if (!systemUser) {
+    return res.status(400).json({
+      message: "System user not found",
+    });
+  }
+
+  const fromUserAccount = await accountModel.findOne({
+    user: systemUser._id,
   });
 
   if (!fromUserAccount) {
     return res.status(400).json({
-      message: "System account not found for the user",
+      message: "System account not found",
     });
   }
 
-  const session = await mongoose.startsession();
-  session.startTransaction();
-
-  const transactionModel = new transactionModel({
-    fromAccount: formUserAccount._id,
-    toAccount,
-    amount,
+  const existingTransaction = await transactionModel.findOne({
     idempotencyKey,
-    status: "PENDING",
   });
 
-  const debitLedgerEntry = await ledgerModel.create(
+  if (existingTransaction) {
+    return res.status(200).json({
+      message: "Transaction already processed",
+      transaction: existingTransaction,
+    });
+  }
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  const transaction = await transactionModel.create(
+    [
+      {
+        fromAccount: fromUserAccount._id,
+        toAccount,
+        amount,
+        idempotencyKey,
+        status: "PENDING",
+      },
+    ],
+    { session },
+  );
+
+  const createdTransaction = transaction[0];
+
+  await ledgerModel.create(
     {
       account: fromUserAccount._id,
-      transaction: transaction._id,
+      transaction: createdTransaction._id,
       amount,
       type: "DEBIT",
     },
-    { session }, // yha session use krne ka matlba hai ki data yha array ki form me save hoga .
+    { session },
   );
 
-  const creditLedgerEntry = await ledgerModel.create(
+  await ledgerModel.create(
     {
       account: toUserAccount._id,
-      transaction: transaction._id,
+      transaction: createdTransaction._id,
       amount,
       type: "CREDIT",
     },
     { session },
   );
 
-  transaction.status = "COMPLETED";
+  createdTransaction.status = "COMPLETED";
+  await createdTransaction.save({ session });
+
+  await session.commitTransaction();
   session.endSession();
 
   return res.status(201).json({
     message: "Initial funds transaction created successfully",
-    transaction,
+    transaction: createdTransaction,
   });
 }
 

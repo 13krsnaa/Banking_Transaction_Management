@@ -5,7 +5,7 @@ const emailService = require("../services/email.services");
 // user register controller
 // Ye post request : /api/auth/register ko control krega (line 6 - 39)
 async function userRegisterController(req, res) {
-  const { email, password, name } = req.body;
+  const { email, password, name, systemUser = false } = req.body;
 
   const isExist = await userModel.findOne({
     email: email,
@@ -22,6 +22,7 @@ async function userRegisterController(req, res) {
     email,
     password,
     name,
+    systemUser: Boolean(systemUser),
   });
 
   const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
@@ -34,6 +35,7 @@ async function userRegisterController(req, res) {
       _id: user._id,
       email: user.email,
       name: user.name,
+      systemUser: user.systemUser,
     },
     token,
   });
