@@ -3,7 +3,7 @@ const authController = require("../controllers/auth.controllers");
 
 const router = express.Router();
 
-// POST request : /api/auth/register ko control krega
+// POST request : /api/auth/register ko request bhejega
 router.post("/register", authController.userRegisterController);
 
 // POST request : /api/auth/login ko control krega

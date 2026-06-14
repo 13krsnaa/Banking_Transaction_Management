@@ -10,7 +10,7 @@ const mongoose = require("mongoose");
 /*
     1. validate the request  ---req.body se aane wala data ko verify karna 
     2. vaidate idempotency key
-    3. check account status
+    3. account status check krega 
     4.  sender balance from the ledger
     5. create PENDING transaction
     6. create DEBIT ledger entry

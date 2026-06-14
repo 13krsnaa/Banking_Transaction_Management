@@ -4,7 +4,7 @@ const transactionRoutes = Router();
 const transactionController = require("../controllers/transaction.controller");
 const authMiddleware = require("../middleware/auth.middleware");
 
-//POST request: /api/transactions/ ye nya transction create krega
+//POST request: /api/transactions/ ye nya transction create krega or us route par request bhejega
 
 transactionRoutes.post(
   "/",
